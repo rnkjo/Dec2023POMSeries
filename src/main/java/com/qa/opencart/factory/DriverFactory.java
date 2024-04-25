@@ -15,6 +15,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.safari.SafariDriver;
 
+import com.qa.opencart.exeception.FrameworkException;
 import com.qa.opencart.exeception.BrowserException;
 import com.qa.opencart.logger.Log;
 
@@ -51,7 +52,7 @@ public class DriverFactory {
 			tldriver.set(new SafariDriver());
 			break;
 		default:
-			System.out.println("Please pass the proeper browser name.....");
+			//System.out.println("Please pass the proeper browser name.....");
 			Log.error("Please pass the proeper browser name....." +browserName);
 			throw new BrowserException("No Browser Found.....");
 		}
@@ -68,15 +69,49 @@ public class DriverFactory {
 	}
 	
 	public Properties initProp() {
+		//mvn clean install -Denv="qa"
+		FileInputStream ip=null;
 		prop= new Properties();
+		String envName= System.getProperty("env");
+		Log.info("Running tests on " +envName);
+		
 		try {
-			FileInputStream ip = new FileInputStream("./src/test/resources/config/config.properties");
-			prop.load(ip);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+			
+		
+		if(envName == null) {
+			 ip = new FileInputStream("./src/test/resources/config/config.qa.properties");
+		}else {
+			switch (envName.toLowerCase().trim()) {
+			case "qa":
+				 ip = new FileInputStream("./src/test/resources/config/config.qa.properties");
+				break;
+			case "uat":
+				 ip = new FileInputStream("./src/test/resources/config/config.uat.properties");
+				break;
+			case "dev":
+				 ip = new FileInputStream("./src/test/resources/config/config.dev.properties");
+				break;
+			case "stage":
+				 ip = new FileInputStream("./src/test/resources/config/config.stage.properties");
+				break;
+			case "prod":
+				 ip = new FileInputStream("./src/test/resources/config/config.properties");
+				break;
+			default:
+				Log.error("Please Pass the right env name....");
+				throw new FrameworkException(envName);
+				}
+			}
+		}
+		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		try {
+			prop.load(ip);
+		}  catch (IOException e) {
+			e.printStackTrace();
+		}
+	
 		return prop;
 		
 	}
